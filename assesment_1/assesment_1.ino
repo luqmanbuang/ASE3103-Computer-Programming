@@ -37,20 +37,13 @@ void setup() {
   /*Declare pins used for the button*/
   pinMode(buttonPin, INPUT);
   pinMode(buttonPin, INPUT_PULLUP);
-
 }
 
-void loop() {
-  timer++; // counts the time in seconds
-  Serial.print("Timer: ");
-  Serial.print(timer);
-  Serial.println("s");
 
+
+void loop() {
   /*Feature one: reads the ldr value and displays the value on the serial monitor*/
-  ldrValue = ldrAverage(ldrPin);
-  Serial.print("5 sec average: ");
-  Serial.print(ldrValue);
-  Serial.println("v\n");
+  serialOutput(ldrPin);
 
   /*Feature two: display the average readings onto the 7seg display*/
   display(9);
@@ -66,18 +59,12 @@ void loop() {
       Serial.print("WARNING, COUNTDOWN ACTIVATED! ");
       Serial.print(q);
       Serial.println("s LEFT UNTIL SYSTEM LOCKDOWN");
-      Serial.print("Timer: ");
-      Serial.print(timer);
-      Serial.println("s");
-      ldrValue = ldrAverage(ldrPin);
-      Serial.print("5 sec average: ");
-      Serial.print(ldrValue);
-      Serial.println("v\n");
+      serialOutput(ldrPin);
       delay(1000);
       /*If voltage average increases above 3.0v, the system exits countdown mode*/
       if (ldrValue > 3.0) {
         Serial.println("COUNTDOWN MODE EXITED");
-        goto recover;
+        goto recover; // goto command is used to redirect to the end of the loop
       }
     }
     /*Feature four: If voltage average continues below 3.0v after 5 second countdown, goes into lockdown mode. Voltage average is still monitored every second.
@@ -88,30 +75,23 @@ void loop() {
       if (currentMillis - previousMillis >= 1000) {
         previousMillis = currentMillis;
 
-
-        timer++; // counts the time in seconds
         display(-1); //Displays 'L' signifying system is in lockdown mode
         Serial.println("WARNING, SYSTEM LOCKDOWN ACTIVATED!\nTO RESET: ENSURE PROPER LIGHTING AND PRESS RESET BUTTON");
-        Serial.print("Timer: ");
-        Serial.print(timer);
-        Serial.println("s");
-        ldrValue = ldrAverage(ldrPin);
-        Serial.print("5 sec average: ");
-        Serial.print(ldrValue);
-        Serial.println("v\n");
+        serialOutput(ldrPin);
 
+        /*Condition to exit lockdown mode: Average voltage more than 3.0v and reset button is pressed */
         buttonNew = digitalRead(buttonPin);
         if (buttonOld == 0 && buttonNew == 1 && ldrAverage(ldrPin) > 3.0 ) {
           digitalWrite(ledPin, LOW);
           delay(1000);
           Serial.print("\n");
-          goto recover;
+          goto recover; // goto command is used to redirect to the end of the loop
         }
         buttonOld = buttonNew;
       }
     }
   }
-recover:;
+recover:; // goto recover; command is redirected here to the end of the loop
 }
 
 /*VVVVVV Functions Below VVVVVV*/
@@ -128,21 +108,21 @@ float ldrAverage(int pin) {
   Serial.print(Voltage);
   Serial.println("v");
 
-
-  memory[0] = Voltage;
+  /*The voltage is stored into a 5-second memory */
+  memory[0] = Voltage; //In each iteration the voltage is stored in the first array (memory[0])
   for (i = 3; i > -1; i--) {
-    memory[i + 1] = memory[i];
+    memory[i + 1] = memory[i]; //The oldest memory is replaced, and the memory is cascaded backwards
   }
 
   Total = 0; // resets Total so that it can recompute everytime function is called
   for (n = 0; n < 5; n++) {
-    Total += memory[n];
+    Total += memory[n]; //computes the sum of the voltages in the memory array
     //    Serial.print("memory[");
     //    Serial.print(n);
     //    Serial.print("]: ");
     //    Serial.println(memory[n]);
   }
-  return Average = Total / 5.0;
+  return Average = Total / 5.0; // returns the 5 sec voltage average
 }
 
 // display(): Function outputs single digit argument to the 7seg display
@@ -237,4 +217,19 @@ void display(int num = -1) {
     digitalWrite(d, 1);
     digitalWrite(c, 0);
   }
+}
+
+//serialOutput(int): This function reduces repeated codes throughout the loop.
+float serialOutput(int z) {
+  timer++; // counts the time in seconds
+  Serial.print("Timer: ");
+  Serial.print(timer);
+  Serial.println("s");
+
+  /*Feature one: reads the ldr value and displays the value on the serial monitor*/
+  ldrValue = ldrAverage(z); //calls ldrAverage() function and stores it into a variable called ldrValue
+  Serial.print("5 sec average: ");
+  Serial.print(ldrValue);
+  Serial.println("v\n");
+  return ldrValue; // ldrValue is returned
 }
