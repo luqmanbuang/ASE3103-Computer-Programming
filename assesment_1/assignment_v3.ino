@@ -53,8 +53,6 @@ void setup() {
   /*Declare pins used for the button*/
   pinMode(buttonPin, INPUT);
   pinMode(buttonPin, INPUT_PULLUP);
-
-
 }
 
 void loop() {
@@ -90,6 +88,7 @@ void loop() {
     blinkMillis = millis();
     sirenMillis = millis();
     slwMillis = millis();
+    
     while (true) {
       currentMillis = millis(); //starts realtime count of while loop
 
@@ -238,7 +237,7 @@ void display(int num = -1) {
   }
 }
 
-//serialOutput(int): This function reduces code repetition in the loop.
+//serialOutput(): This function reduces code repetition in the loop
 float serialOutput(int z) {
   timer++; // counts the time in seconds
   Serial.print("Timer: ");
@@ -253,6 +252,7 @@ float serialOutput(int z) {
   return ldrValue; // ldrValue is returned
 }
 
+// siren(): Function introduces buzzer output
 void siren(int timer = 1000) {
   if (currentMillis - sirenMillis >= timer) {
     if (buzzerFreq == 1000) {
@@ -266,6 +266,7 @@ void siren(int timer = 1000) {
   }
 }
 
+// blink(): // Function is used to output the red LED "warning" lights
 void blink(boolean follow = false, int timer = 1000) {
   if (follow) {
     if (currentMillis - blinkMillis >= timer) {
