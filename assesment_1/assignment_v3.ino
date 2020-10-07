@@ -1,25 +1,24 @@
 /* LDR related variables */
-int ldrPin = A5; // LDR digital input pin
+const int ldrPin = A5; // LDR digital input pin
 float ldrValue = 0; // variable to store the value coming from the sensor
 int timer;
 float memory[5] = {}; // initialize array, stored as a global variable
 float ldrAverage(int); // prototype function
 
 /* 7seg related variables */
-int g = 9, f = 10, a = 11, b = 12, e = 5, d = 6, c = 7, dp = 8;
-int q;
+const int g = 9, f = 10, a = 11, b = 12, e = 5, d = 6, c = 7, dp = 8;
 void display(int); // prototype function
 
 /* LED and button related variables */
-int ledPin = 2; // led digital input pin
-int buttonPin = 4; // button digital input pin
+const int ledPin = 2; // led digital input pin
+const int buttonPin = 4; // button digital input pin
 int buttonNew;
 int buttonOld = 1;
 bool ledState = false;
 
 /* Potentiometer and buzzer related variables */
-int buzzerPin = 3; // buzzer digital input pin
-int potPin = A0; // potentiometer digital input pin
+const int buzzerPin = 3; // buzzer digital input pin
+const int potPin = A0; // potentiometer digital input pin
 
 int buzzerFreq = 1000;
 
@@ -65,6 +64,7 @@ void loop() {
 
   /*Feature three: If the average value is less than 3 volts, it will go into countdown mode*/
   if (ldrValue < 3.0 && timer > 4) {
+    int q;
     /*Counts down from 5 to 0, during countdown, the voltage average is still monitored every second*/
     for (q = 9; q > 0; q--) {
       display(q); // displays the 5 second countdown
@@ -84,7 +84,6 @@ void loop() {
       Lockdown mode is an infinite loop, breaks when voltage average is more than 3.0v and reset button is pushed*/
 
     /*starts real-time counter*/
-    StartMillis = millis();
     blinkMillis = millis();
     sirenMillis = millis();
     slwMillis = millis();
