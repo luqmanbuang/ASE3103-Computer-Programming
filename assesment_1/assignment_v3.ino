@@ -23,12 +23,13 @@ int potPin = A0; // potentiometer digital input pin
 
 int buzzerFreq = 1000;
 
-unsigned long StartMillis = 0;
+/*Variables used to calculate time intervals replacing delay() by using millis() function*/
 unsigned long currentMillis = 0;
 unsigned long blinkMillis = 0;
 unsigned long sirenMillis = 0;
 unsigned long slwMillis = 0;
 
+/*Prototype functions of outputs requiting time intervals*/ 
 void blink(bool, int); // prototype function
 void siren(int); // prototype function
 void serialLockdownWarning(int); // prototype function
@@ -56,13 +57,11 @@ void setup() {
 
 }
 
-
-
 void loop() {
-  /*Feature one: reads the ldr value and displays the value on the serial monitor*/
+  /*Feature one: Reads the ldr value and displays the value on the serial monitor*/
   serialOutput(ldrPin);
 
-  /*Feature two: display the average readings onto the 7seg display*/
+  /*Feature two: Risplay the average readings onto the 7seg display*/
   display(9);
   delay(1000);
 
@@ -92,20 +91,18 @@ void loop() {
     sirenMillis = millis();
     slwMillis = millis();
     while (true) {
-      currentMillis = millis();
+      currentMillis = millis(); //starts realtime count of while loop
 
       serialLockdownWarning(1000);
-      //siren(250);
+      siren(250);
       blink(true, 250);
 
       /*Condition to exit lockdown mode: Average voltage more than 3.0v and reset button is pressed */
       buttonNew = digitalRead(buttonPin);
       if (buttonOld == 0 && buttonNew == 1 && ldrAverage(ldrPin) > 3.0 ) {
-        digitalWrite(ledPin, LOW);
-        delay(1000);
+        digitalWrite(ledPin, LOW); //resets red LED (warning light)
+        noTone(buzzerPin); // silents the buzzer        
         Serial.print("\n");
-        noTone(buzzerPin);
-        digitalWrite(ledPin, LOW);
         goto recover; // goto command is used to redirect to the end of the loop
       }
       buttonOld = buttonNew;
@@ -118,14 +115,15 @@ recover:; // goto recover; command is redirected here to the end of the loop
 
 // ldrAverage(): function which return the 5 second average of the ldr voltage
 float ldrAverage(int pin) {
-  float potVAL = (analogRead(A0) / 1023.0) * 5.0; // add
-
   float Total, Average, Value, Voltage;
-  int i, n;
-
+  int i, n; 
+  
+  float potVAL = (analogRead(A0) / 1023.0) * 5.0; // reads the Voltage input from the potentiometer. This reading is used to add artificial values into LDR reading. 
+  
   Value = analogRead(pin); // reads the value from the LDR sensor
-  Voltage = ( (Value / 1023) * 5 ) + int(potVAL) ; // converts analog data into voltage
-  //  Serial.println(int(potVAL));
+  Voltage = ( (Value / 1023) * 5 ) + int(potVAL) ; // converts LDR analog data into voltage, plus potentiometer reading. U
+  
+  //Serial.println(int(potVAL));
   Serial.print("Current voltage: ");
   Serial.print(Voltage);
   Serial.println("v");
@@ -149,8 +147,7 @@ float ldrAverage(int pin) {
 
 // display(): Function outputs single digit argument to the 7seg display
 void display(int num = -1) {
-  if (num == 0)
-  {
+  if (num == 0){
     digitalWrite(g, 0);
     digitalWrite(f, 1);
     digitalWrite(a, 1);
@@ -257,7 +254,6 @@ float serialOutput(int z) {
 }
 
 void siren(int timer = 1000) {
-
   if (currentMillis - sirenMillis >= timer) {
     if (buzzerFreq == 1000) {
       buzzerFreq = 2000;
